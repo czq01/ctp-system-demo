@@ -1,0 +1,155 @@
+﻿#ifndef __SocketConn_
+#define __SocketConn_
+
+# include "mysql.h"
+# include <type_traits>
+# include "Windows.h"
+# include "convert.h"
+# include <concepts>
+# include "memory_pool"
+
+// 通信类型
+static inline const bool __SERVER_  = false  ;  // 服务端标识
+static inline const bool __CLIENT_  = true   ;  // 客户端标识
+// connType
+static inline const bool LOCAL_CON  = 0      ;  // 本地传输
+static inline const bool REMOTE_CON = 1      ;  // 跨主机传输
+// crsPlt
+static inline const bool INCPP_CON  = false  ;  // 同编程语言传输
+static inline const bool OUTCPP_CON = true   ;  // 跨编程语言传输
+
+
+class SocketConn final{
+    /**
+     * @brief 基于Socket的通信类
+     * @author czq01
+     * @attention 无参构造，禁止复制，删除了operator=
+     * @date Apr. 1, 2022.
+     * @if Server端：Side=0.
+     * 使用流程： 构造->创建线程监听->register并建立连接
+     *
+     * @else Client端：Side=1.
+     * 使用流程： 构造->RegisterConn->起线程监听Recv->Send
+     *
+     * @endif
+     *
+     * @todo 将流程简化为 构造->start();
+     */
+
+private:
+    // sendSocket
+    SOCKET * self_send = nullptr;     // array for server
+    SOCKET * remote_recieve = nullptr;    // array for server
+    // recieveSocket
+    SOCKET * self_recieve = nullptr;
+    SOCKET * remote_send = nullptr;
+
+    /* Client 变量 */
+    int sid = -1;
+
+    /* Server 变量 */
+
+    // SID分配表 (插入 &, 删除 ~(^0))
+    unsigned long long nSid = 0x0;
+    // 端口分配起始
+    int distPortstart = 18888;
+    // 注册SID端口
+    int registerPort = 18887;
+    // 注册端口监听Socket
+    SOCKET self;
+    //
+    std::queue<char *> qStruct;
+    // sid 通信方法映射
+    unsigned long long bArrSidPlatform = 0x0;  // Map{sid: bool cross platform}
+    unsigned long long bArrSidConnType = 0x0;  // Map{sid: bool cross platform}
+    // 高频 socket 列表映射
+    SOCKET sarrSidSocket[64]{0};  // Map{sid: Socket}
+    // 低频 socket 参数映射
+    sockaddr_in arrSockAddr[64];
+
+    /* 通用 变量 */
+    WORD wSocketVersion;
+    WSADATA wsData;
+    std::queue<size_t> qMethod;
+
+    // Socket Function.
+    void sendData(const char* data, const size_t& length, const int& sid) {}
+
+    void sendData(char, const std::string&, const int&) {}
+
+    void recvData(char * data, const int& sid) {}
+
+    std::string && recvData(int, bool) {}
+
+    // 解除SID占用
+    void unoccupySID(const int& sid) noexcept{
+        // Hiden
+    }
+
+    // Server端分配SID
+    int distributeSID() noexcept {
+        // hiden implementations
+    }
+
+    // Server 监听 SID 注册端口
+    void ListeningRegister() {
+        // Hiden
+    }
+
+    // 建立 Socket 连接
+    // Server 仅与 INCPP && LOCAL_CON 建立长连接
+    // Client 则起进程recv。
+    [[nodiscard]] bool establishConn
+    (const int& Sid, const bool& connType, const bool& crsPlf,const char * serverAddr = "localhost") noexcept {
+        // hiden implementations
+    }
+
+    // 注册 SID (return 1/0: exit with/without exception)
+    [[nodiscard]] bool registerSID
+    (const char * serverAddr, const bool& connType, const bool& crsPlf) {
+        // hiden implementations
+    }
+
+public:
+    // TODO Client先进行sid注册，随后通过给定端口一把子订阅。
+    // TODO 单独的注册流接口。保持开启的数据通道。
+    // 注册函数
+    // Socket side<0/1> -> Server/Client
+    SocketConn() {
+        // hiden implementations
+    }
+
+    // TODO: Use Socket-Local on High-Freq (Default)
+    void setSocket() noexcept {}
+
+    // TODO: Use Shared Memory on High-Freq
+    void setShrmem() noexcept {}
+
+    // (Client Only) 注册SID及连接
+    // connType -> [LOCAL_CON | REMOTE_CON]
+    // crsPlf -> High-Freq(C++ only): INCPP_CON, Low-Freq(Python etc.): OUTCPP_CON
+    void registerConn(const char * serverAddr, const bool& connType, const bool& crsPlf) noexcept {
+        this->registerSID(serverAddr, connType, crsPlf);
+        this->establishConn( connType, crsPlf, serverAddr);
+    }
+
+    template <typename _STRACT_T>
+    bool sendStruct(const _STRACT_T *object, const int& sid) {
+        if(this->bArrSidPlatform & (1<<sid)) {
+            this->qStruct.push(std::move(object));
+            this->qMethod.push(sizeof(object));
+        } else {
+            this->sendData((char *)object, sizeof(object), sid);
+        }
+    }
+
+    SocketConn& operator=(const SocketConn& s) = delete;
+    void operator()(...) = delete;
+
+
+    // template <typename _STRACT_T>
+    // bool ClientSendStruct(_STRACT_T object);
+    ~SocketConn() {}
+};
+
+#endif

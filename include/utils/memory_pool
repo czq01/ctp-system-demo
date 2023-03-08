@@ -1,0 +1,41 @@
+# ifndef __MemoryPool_
+# define __MemoryPool_
+
+#include <type_traits>
+#include <concepts>
+#include <queue>
+#include <semaphore>
+
+template <typename BaseType, size_t Multi> requires (Multi<=10)
+class _BaseMemoryPool{
+    using T = BaseType;
+private:
+    const size_t once = (1<<Multi) * sizeof(T);
+    T * pool = 0x00;
+    std::queue<T *> lPoint;
+    std::binary_semaphore insLock, popLock;
+
+public:
+    explicit _BaseMemoryPool(size_t total = (1<<Multi)<<8):
+        pool(new T[total]), insLock(1), popLock(1) {
+            // Hiden
+        }
+
+    ~_BaseMemoryPool() {
+        // Hiden
+    }
+
+    [[nodiscard("May cause memory lose")]] T * New() {
+        // Hiden
+    }
+
+    void Delete(T * p) {
+        // Hiden
+    }
+
+};
+
+typedef _BaseMemoryPool<char, 9> MemoryPool_Event;
+typedef _BaseMemoryPool<int, 9> MemoryPool_IntArr;
+
+#endif

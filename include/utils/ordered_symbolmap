@@ -1,0 +1,58 @@
+﻿
+#include <type_traits>
+#include <iostream>
+#include "memory_pool"
+
+template <typename _Key, typename _Val> class Ordered_SymbolHashMap final {
+private:
+    _Val** hashTable;
+
+private:
+    template<int len> __int64 _CalHash_Int(const char * str) {
+        // Hiden
+    }
+
+    template <bool _Upper_Case,int _Size> // 双参
+    __int64 _CalHash_Char(const char * ccstr) {
+        // Hiden
+    }
+
+    template <int _Size> constexpr __int64 _Sge_Hash(const char *ccstr) {
+        return 1;
+    }
+
+    template <int _Size> constexpr __int64 IterHash(const char * ccstr) {
+        // T+D &  symbol-c/p-price
+
+        // hiden implementations
+    }
+
+    template <> constexpr __int64 IterHash<1>(const char * ccstr) {
+        // hiden implementations
+    }
+
+
+    __int64 SymbolHash(const char * ccstr) {
+        // Hiden
+    };
+
+public:
+    Ordered_SymbolHashMap() {
+        // hiden implementations
+    }
+
+    inline void insert(const _Key& pair_first, const _Val& pair_second) noexcept {
+         // hiden implementations
+    }
+
+    inline _Val& at(const _Key& key) noexcept{
+         // hiden implementations
+    }
+    _Val& operator[](const _Key& key) {
+         // hiden implementations
+    }
+
+    ~Ordered_SymbolHashMap(){
+         // hiden implementations
+    }
+};

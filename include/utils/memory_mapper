@@ -1,0 +1,107 @@
+﻿# ifndef __MemoryMapper__
+# define __MemoryMapper__
+
+# include <type_traits>
+# include <concepts>
+# include <Windows.h>
+
+
+template <unsigned int O, unsigned int Num, bool Server> requires (Num<64U)
+
+class FileMap {
+    // O:  length of each pointer in 2^O.
+    // Num: max storage capacity,
+
+    // File format
+    // [Header(Num<<2 bytes, pointer link to content addresses)] -
+    // [occupiedIndicator(8 bytes, indicate whether place is occupied.)]
+    // [content(DO NOT operate manully)]
+
+    // search methodology.
+    // Client search the occupied[count] see if occupied.
+    // occupied[count] =1 then read pointer[count].
+    // Make occupied[count] back to 0; make count self-increment.
+    //
+    // Server search the occupied[count] to see if occupied.
+    // occupied=0 then changge the value.
+    // make occupied to set to 1.
+
+private:
+    int sid;
+    // map file info
+    char file_name[16];
+    char locker_name[16];
+    HANDLE file_handle;
+    // File Addr.
+    void * file_header_addr;
+    unsigned long long * file_occupied_addr;
+    char * file_content_addr;
+    // pointerssa
+    char * pointerPool [Num];
+    // counter
+    int counter;
+    // locker
+    HANDLE semaphore;
+
+    bool initiateHeader() {
+        // hiden implementations
+    }
+
+    bool initiatePointer() {
+        // hiden implementations
+    }
+
+    #ifdef WIN32
+    bool initiateFile() {
+        // Hiden
+    }
+
+    void * getLock() {
+        return CreateSemaphore(0x0, 0x1, 0x1, locker_name);
+    }
+
+    void releaseLock() {
+        // Hiden
+    }
+
+    void acquireLock() {
+        // Hiden // Hiden
+    }
+
+    #else  // TODO: LINUX Part
+    bool initiateFile();
+    void * getLock();
+    void releaseLock();
+    void acquireLock();
+
+    #endif
+public:
+    FileMap(const int& sid): sid(sid), counter(0){
+        // Hiden
+    }
+
+    [[nodiscard]] bool connect() {
+        return initiateFile() || initiateHeader() || initiatePointer();
+    }
+
+    bool send(const char *buffer, const size_t& len) {
+        // hiden implementations
+    }
+
+    bool recv(char * const buffer, const size_t& len) {
+        // hiden implementations
+    }
+
+    void close() {
+        if (file_handle) {CloseHandle(file_handle);}
+    }
+
+    ~FileMap() {
+        if (file_handle) close();
+    }
+};
+
+typedef FileMap<9,63,1> MapperServer;
+typedef FileMap<9,63,0> MapperClient;
+
+# endif
